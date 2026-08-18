@@ -1,6 +1,6 @@
 # HVF-Trainer
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22003444.svg)](https://doi.org/10.5281/zenodo.22003444)
 
 **Web-Based Real-Time Visual Field Fixation Simulator**
 
@@ -38,7 +38,9 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Citation
 
-If you use this software in your clinical work or research, please cite it.
+If you use this software in your clinical work or research, please cite it as
+below, or via its archived DOI:
+[https://doi.org/10.5281/zenodo.22003444](https://doi.org/10.5281/zenodo.22003444).
 Machine-readable citation metadata is provided in
 [`CITATION.cff`](./CITATION.cff) (Citation File Format v1.2.0) — GitHub
 renders a "Cite this repository" button from it automatically, and it's
@@ -51,7 +53,7 @@ also picked up directly by Zenodo when this repository is archived there.
   year    = {2026},
   version = {1.0.1},
   url     = {https://github.com/norasyikin-cloud/hvf-trainer},
-  doi     = {10.5281/zenodo.XXXXX}
+  doi     = {10.5281/zenodo.22003444}
 }
 ```
 
