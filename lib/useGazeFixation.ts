@@ -5,6 +5,12 @@ import { useWebGazer, GazeSample } from "./useWebGazer";
 import { degToPx, distancePx } from "./gaze-utils";
 import { DriftEvent, GazePoint, ScreenCalibration } from "./types";
 
+// A blink briefly occludes the eye, which makes WebGazer's face-landmark tracking spit out a
+// wild gaze coordinate for a frame or two while the eyelid is closing/opening. Requiring the
+// gaze to stay outside tolerance for this long before treating it as a real fixation break
+// absorbs that blip without needing explicit blink detection -- patients can blink normally.
+const BLINK_GRACE_MS = 300;
+
 interface Options {
   toleranceDeg?: number;
   calibration: ScreenCalibration;
@@ -27,6 +33,8 @@ export function useGazeFixation({ toleranceDeg = 4, calibration, active }: Optio
   const toleranceRadiusPxRef = useRef(degToPx(toleranceDeg, calibration));
   const isDriftingRef = useRef(false);
   const driftStartRef = useRef(0);
+  /** When the current continuous out-of-tolerance streak began, or null while in tolerance. */
+  const outOfToleranceSinceRef = useRef<number | null>(null);
   const driftEventsRef = useRef<DriftEvent[]>([]);
   const sampleCountRef = useRef(0);
   const inToleranceCountRef = useRef(0);
@@ -52,28 +60,39 @@ export function useGazeFixation({ toleranceDeg = 4, calibration, active }: Optio
       sampleCountRef.current += 1;
       const dist = distancePx(sample, centerRef.current);
       const ok = dist <= toleranceRadiusPxRef.current;
-      if (ok) {
-        inToleranceCountRef.current += 1;
-      } else {
-        heldSinceMarkRef.current = false;
-      }
 
-      if (!ok && !isDriftingRef.current) {
-        isDriftingRef.current = true;
-        driftStartRef.current = sample.atMs;
-      } else if (ok && isDriftingRef.current) {
-        isDriftingRef.current = false;
-        driftEventsRef.current.push({
-          atMs: driftStartRef.current,
-          durationMs: sample.atMs - driftStartRef.current,
-        });
-        setDriftEventCount(driftEventsRef.current.length);
+      if (ok) {
+        outOfToleranceSinceRef.current = null;
+        inToleranceCountRef.current += 1;
+        if (isDriftingRef.current) {
+          isDriftingRef.current = false;
+          driftEventsRef.current.push({
+            atMs: driftStartRef.current,
+            durationMs: sample.atMs - driftStartRef.current,
+          });
+          setDriftEventCount(driftEventsRef.current.length);
+        }
+      } else {
+        if (outOfToleranceSinceRef.current === null) {
+          outOfToleranceSinceRef.current = sample.atMs;
+        }
+        const outDurationMs = sample.atMs - outOfToleranceSinceRef.current;
+        if (outDurationMs >= BLINK_GRACE_MS) {
+          if (!isDriftingRef.current) {
+            isDriftingRef.current = true;
+            driftStartRef.current = outOfToleranceSinceRef.current;
+          }
+          heldSinceMarkRef.current = false;
+        } else {
+          // Still within the blink grace window -- don't penalize it yet.
+          inToleranceCountRef.current += 1;
+        }
       }
 
       if (sample.atMs - lastDisplayUpdateRef.current > 80) {
         lastDisplayUpdateRef.current = sample.atMs;
         setDisplayGaze({ x: sample.x, y: sample.y, source: sample.source });
-        setInTolerance(ok);
+        setInTolerance(!isDriftingRef.current);
       }
     },
     [active],
@@ -88,6 +107,7 @@ export function useGazeFixation({ toleranceDeg = 4, calibration, active }: Optio
 
   const reset = useCallback(() => {
     driftEventsRef.current = [];
+    outOfToleranceSinceRef.current = null;
     sampleCountRef.current = 0;
     inToleranceCountRef.current = 0;
     isDriftingRef.current = false;
