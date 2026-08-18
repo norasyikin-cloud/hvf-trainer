@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import { CalibrationOverlay } from "@/components/CalibrationOverlay";
+import { NavControls } from "@/components/NavControls";
 import { useGaze } from "@/lib/gazeStore";
 import { useSession } from "@/lib/sessionStore";
 
@@ -42,13 +43,19 @@ export default function CalibratePage() {
   };
 
   if (status === "camera" && hasReceivedCameraSample) {
-    return <CalibrationOverlay recordClick={recordCalibrationClick} onDone={finishCalibration} />;
+    return (
+      <>
+        <NavControls />
+        <CalibrationOverlay recordClick={recordCalibrationClick} onDone={finishCalibration} />
+      </>
+    );
   }
 
   const waitingForFace = status === "camera" && !faceDetectionTimedOut;
 
   return (
     <PageShell>
+      <NavControls />
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
         Webcam calibration
       </h1>

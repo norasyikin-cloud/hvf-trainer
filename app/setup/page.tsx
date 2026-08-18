@@ -6,6 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import { ScreenSizeCalibrator } from "@/components/ScreenSizeCalibrator";
 import { SensitivitySelector } from "@/components/SensitivitySelector";
 import { PatternSelector } from "@/components/PatternSelector";
+import { NavControls } from "@/components/NavControls";
 import { useSession } from "@/lib/sessionStore";
 import { EyeSide } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export default function SetupPage() {
   if (step === "pattern") {
     return (
       <PageShell>
+        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Choose a test pattern
         </h1>
@@ -48,6 +50,7 @@ export default function SetupPage() {
   if (step === "eye") {
     return (
       <PageShell>
+        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Which eye are you testing?
         </h1>
@@ -86,6 +89,7 @@ export default function SetupPage() {
   if (step === "distance") {
     return (
       <PageShell>
+        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           How far are you sitting from the screen?
         </h1>
@@ -117,6 +121,7 @@ export default function SetupPage() {
   if (step === "sensitivity") {
     return (
       <PageShell>
+        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Fixation-loss sensitivity
         </h1>
@@ -138,6 +143,7 @@ export default function SetupPage() {
 
   return (
     <PageShell>
+      <NavControls />
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
         Screen size calibration
       </h1>

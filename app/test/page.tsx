@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { FixationTarget } from "@/components/FixationTarget";
 import { StimulusCanvas, ScreenStimulus } from "@/components/StimulusCanvas";
 import { ProgressHUD } from "@/components/ProgressHUD";
+import { NavControls } from "@/components/NavControls";
+import { PauseOverlay } from "@/components/PauseOverlay";
 import { useGaze } from "@/lib/gazeStore";
 import { useSession } from "@/lib/sessionStore";
 import { degToPx, fieldPointToScreen } from "@/lib/gaze-utils";
@@ -41,7 +43,10 @@ export default function TestPage() {
   const [started, setStarted] = useState(false);
   const [engine, setEngine] = useState<EngineState>(() => initEngineState([], 0));
   const [center, setCenter] = useState({ x: 0, y: 0 });
+  const [isPaused, setIsPaused] = useState(false);
   const sessionStartRef = useRef(0);
+  const pausedAtRef = useRef(0);
+  const totalPausedMsRef = useRef(0);
 
   const dispatch = useCallback((action: EngineAction) => {
     setEngine((prev) => engineReducer(prev, action));
@@ -60,15 +65,31 @@ export default function TestPage() {
     reset();
     setTrackingActive(true);
     sessionStartRef.current = Date.now();
+    totalPausedMsRef.current = 0;
     setEngine(initEngineState(buildTrialList(eye, pattern), performance.now()));
     setStarted(true);
   };
 
+  const pauseTest = () => {
+    if (isPaused || !started || engine.phase === "complete") return;
+    pausedAtRef.current = Date.now();
+    setTrackingActive(false);
+    setIsPaused(true);
+  };
+
+  const resumeTest = () => {
+    totalPausedMsRef.current += Date.now() - pausedAtRef.current;
+    setTrackingActive(true);
+    setIsPaused(false);
+  };
+
   // Begin each trial: show/hide the stimulus dot, play the presentation tone, arm the timeout.
   // Keyed on trialStartedAt (unique per trial) rather than index, since the very first trial
-  // is already at index 0 both before and after `start()` sets it active.
+  // is already at index 0 both before and after `start()` sets it active. Gated on !isPaused so
+  // pausing clears these timers (freezing stimulus generation) and resuming re-arms a full,
+  // fresh presentation of the same (interrupted) trial rather than resuming a stale timer.
   useEffect(() => {
-    if (!started || engine.phase !== "active") return;
+    if (!started || engine.phase !== "active" || isPaused) return;
     const trial = engine.trials[engine.index];
     if (!trial) return;
 
@@ -87,18 +108,19 @@ export default function TestPage() {
       if (hideTimer) clearTimeout(hideTimer);
       clearTimeout(timeoutTimer);
     };
-  }, [started, engine.phase, engine.trialStartedAt, engine.index, engine.trials, beginTrial, dispatch, wasFixationHeldThroughout]);
+  }, [started, engine.phase, engine.trialStartedAt, engine.index, engine.trials, isPaused, beginTrial, dispatch, wasFixationHeldThroughout]);
 
   // Pause briefly between trials (varied, to avoid anticipation), then advance.
   useEffect(() => {
-    if (engine.phase !== "interTrial") return;
+    if (engine.phase !== "interTrial" || isPaused) return;
     const t = setTimeout(() => dispatch({ type: "ADVANCE", now: performance.now() }), randomInterTrialDelay());
     return () => clearTimeout(t);
-  }, [engine.phase, dispatch]);
+  }, [engine.phase, isPaused, dispatch]);
 
-  // Listen for the patient's response while a trial is active.
+  // Listen for the patient's response while a trial is active. Suspended while paused so
+  // moving around or talking to a clinician can't accidentally register a response.
   useEffect(() => {
-    if (engine.phase !== "active") return;
+    if (engine.phase !== "active" || isPaused) return;
     const respond = () => {
       dispatch({ type: "RESPOND", now: performance.now(), fixationHeldThroughout: wasFixationHeldThroughout() });
     };
@@ -114,7 +136,7 @@ export default function TestPage() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", respond);
     };
-  }, [engine.phase, dispatch, wasFixationHeldThroughout]);
+  }, [engine.phase, isPaused, dispatch, wasFixationHeldThroughout]);
 
   // Session complete: assemble and persist the result, then move to the report.
   useEffect(() => {
@@ -129,6 +151,7 @@ export default function TestPage() {
       gazeSampleCount: getSampleCount(),
       gazeInToleranceCount: getInToleranceCount(),
       usedCameraGaze: status === "camera",
+      pausedMs: totalPausedMsRef.current,
     };
     saveSession(session);
     setTrackingActive(false);
@@ -151,6 +174,7 @@ export default function TestPage() {
   if (!started) {
     return (
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center gap-8 bg-zinc-50 px-6 text-center dark:bg-zinc-950">
+        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Ready for the simulated test
         </h1>
@@ -176,6 +200,7 @@ export default function TestPage() {
   if (engine.phase === "complete") {
     return (
       <div className="flex min-h-screen flex-1 items-center justify-center bg-zinc-950 text-zinc-300">
+        <NavControls />
         Finishing up…
       </div>
     );
@@ -183,7 +208,7 @@ export default function TestPage() {
 
   const trial = engine.trials[engine.index];
   const stimulus: ScreenStimulus | null =
-    engine.stimulusVisible && trial
+    !isPaused && engine.stimulusVisible && trial
       ? {
           ...fieldPointToScreen(trial.point, center, calibration),
           diameterPx: Math.max(8, degToPx(STIMULUS_DEGREES, calibration)),
@@ -195,6 +220,14 @@ export default function TestPage() {
       <StimulusCanvas stimulus={stimulus} />
       <FixationTarget inTolerance={inTolerance} />
       <ProgressHUD current={engine.index} total={engine.trials.length} />
+      <NavControls confirmMessage="Leaving now will end this test and your progress won't be saved. Continue?" />
+      <button
+        onClick={pauseTest}
+        className="fixed top-4 right-4 z-[70] rounded-full bg-black/60 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+      >
+        ⏸ Pause
+      </button>
+      {isPaused && <PauseOverlay onResume={resumeTest} />}
     </>
   );
 }

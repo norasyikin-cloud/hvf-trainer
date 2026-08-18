@@ -30,7 +30,9 @@ export default function ResultsPage() {
 
   const summary = computeReliability(lastSession);
   const tips = coachingTips(summary, lastSession.usedCameraGaze);
-  const durationSec = Math.round((lastSession.finishedAt - lastSession.startedAt) / 1000);
+  const durationSec = Math.round(
+    (lastSession.finishedAt - lastSession.startedAt - (lastSession.pausedMs ?? 0)) / 1000,
+  );
 
   return (
     <PageShell>

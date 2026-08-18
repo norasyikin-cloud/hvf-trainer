@@ -44,6 +44,8 @@ export interface SessionResult {
   gazeSampleCount: number;
   gazeInToleranceCount: number;
   usedCameraGaze: boolean;
+  /** Total time spent paused, excluded from the displayed test duration. */
+  pausedMs: number;
 }
 
 export interface GazePoint {
