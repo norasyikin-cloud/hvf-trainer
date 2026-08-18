@@ -1,5 +1,8 @@
 export type EyeSide = "OD" | "OS";
 
+/** How forgiving fixation-loss detection is of gaze noise -- see lib/sensitivity.ts. */
+export type SensitivityLevel = "low" | "medium" | "high";
+
 /** A point in the visual field, in degrees of visual angle from fixation. x>0 is temporal for OD / nasal for OS. */
 export interface FieldPoint {
   x: number;

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useGazeFixation } from "./useGazeFixation";
 import { useSession } from "./sessionStore";
+import { SENSITIVITY_PRESETS } from "./sensitivity";
 
 type GazeFixation = ReturnType<typeof useGazeFixation>;
 
@@ -20,9 +21,10 @@ const GazeContext = createContext<GazeContextValue | null>(null);
  * instead of restarting on every page.
  */
 export function GazeProvider({ children }: { children: ReactNode }) {
-  const { calibration } = useSession();
+  const { calibration, sensitivity } = useSession();
   const [trackingActive, setTrackingActive] = useState(false);
-  const fixation = useGazeFixation({ calibration, active: trackingActive });
+  const { toleranceDeg, graceMs } = SENSITIVITY_PRESETS[sensitivity];
+  const fixation = useGazeFixation({ calibration, active: trackingActive, toleranceDeg, graceMs });
 
   return (
     <GazeContext.Provider value={{ ...fixation, trackingActive, setTrackingActive }}>

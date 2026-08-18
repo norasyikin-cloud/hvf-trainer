@@ -4,14 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import { ScreenSizeCalibrator } from "@/components/ScreenSizeCalibrator";
+import { SensitivitySelector } from "@/components/SensitivitySelector";
 import { useSession } from "@/lib/sessionStore";
 import { EyeSide } from "@/lib/types";
 
-type Step = "eye" | "distance" | "screen";
+type Step = "eye" | "distance" | "sensitivity" | "screen";
 
 export default function SetupPage() {
   const router = useRouter();
-  const { eye, setEye, calibration, setCalibration } = useSession();
+  const { eye, setEye, calibration, setCalibration, sensitivity, setSensitivity } = useSession();
   const [step, setStep] = useState<Step>("eye");
   const [distanceCm, setDistanceCm] = useState(calibration.viewingDistanceCm);
 
@@ -79,6 +80,28 @@ export default function SetupPage() {
           />
           <span className="text-zinc-600 dark:text-zinc-400">cm</span>
         </div>
+        <button
+          onClick={() => setStep("sensitivity")}
+          className="rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        >
+          Continue
+        </button>
+      </PageShell>
+    );
+  }
+
+  if (step === "sensitivity") {
+    return (
+      <PageShell>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Fixation-loss sensitivity
+        </h1>
+        <p className="max-w-md text-zinc-600 dark:text-zinc-400">
+          Controls how easily a gaze drift gets flagged as a fixation loss.
+          If the indicator flags you too often, try Low. A clinician wanting
+          stricter tracking can choose High.
+        </p>
+        <SensitivitySelector value={sensitivity} onChange={setSensitivity} />
         <button
           onClick={() => setStep("screen")}
           className="rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
