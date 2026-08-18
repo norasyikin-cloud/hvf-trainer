@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software in your clinical work or research, please cite it as below."
+authors:
+  - family-names: "Mustafa"
+    given-names: "Norasyikin"
+    orcid: "https://orcid.org/0000-0001-8863-3934"
+title: "HVF-Trainer: Web-Based Real-Time Visual Field Fixation Simulator"
+version: 1.0.0
+date-released: 2026-08-19
+url: "https://hvf-trainer.vercel.app"
+repository-code: "https://github.com/norasyikin-cloud/hvf-trainer"
+keywords:
+  - glaucoma
+  - perimetry
+  - humphrey visual field
+  - eye tracking
+  - mediapipe
+  - fixation training
