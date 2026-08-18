@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState, ReactNode } from "react";
-import { EyeSide, ScreenCalibration, SensitivityLevel, SessionResult } from "./types";
+import { EyeSide, ScreenCalibration, SensitivityLevel, SessionResult, TestPattern } from "./types";
 import { DEFAULT_CALIBRATION } from "./gaze-utils";
 
 const STORAGE_KEY = "hvf-trainer:last-session";
@@ -13,6 +13,8 @@ interface SessionContextValue {
   setCalibration: (c: ScreenCalibration) => void;
   sensitivity: SensitivityLevel;
   setSensitivity: (s: SensitivityLevel) => void;
+  pattern: TestPattern;
+  setPattern: (p: TestPattern) => void;
   lastSession: SessionResult | null;
   saveSession: (s: SessionResult) => void;
   cameraReady: boolean;
@@ -35,6 +37,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [eye, setEye] = useState<EyeSide>("OD");
   const [calibration, setCalibration] = useState<ScreenCalibration>(DEFAULT_CALIBRATION);
   const [sensitivity, setSensitivity] = useState<SensitivityLevel>("medium");
+  const [pattern, setPattern] = useState<TestPattern>("24-2");
   const [lastSession, setLastSession] = useState<SessionResult | null>(readStoredSession);
   const [cameraReady, setCameraReady] = useState(false);
 
@@ -56,6 +59,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setCalibration,
         sensitivity,
         setSensitivity,
+        pattern,
+        setPattern,
         lastSession,
         saveSession,
         cameraReady,

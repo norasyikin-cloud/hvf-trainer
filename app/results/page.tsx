@@ -37,8 +37,11 @@ export default function ResultsPage() {
       <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
         Your results — {lastSession.eye === "OD" ? "right eye" : "left eye"}
       </h1>
+      <p className="text-sm font-medium text-zinc-500 dark:text-zinc-500">
+        Pattern: {lastSession.pattern ?? "24-2"}
+      </p>
 
-      <ResultsGrid session={lastSession} />
+      <ResultsGrid session={{ ...lastSession, pattern: lastSession.pattern ?? "24-2" }} />
 
       <div className="grid w-full max-w-md grid-cols-2 gap-3 text-left text-sm">
         <Stat label="Points seen" value={`${summary.stimulusSeenCount}/${summary.stimulusTrialCount}`} />

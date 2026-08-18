@@ -3,6 +3,9 @@ export type EyeSide = "OD" | "OS";
 /** How forgiving fixation-loss detection is of gaze noise -- see lib/sensitivity.ts. */
 export type SensitivityLevel = "low" | "medium" | "high";
 
+/** Which HVF test grid to run -- see lib/hvf-grid.ts. */
+export type TestPattern = "24-2" | "10-2";
+
 /** A point in the visual field, in degrees of visual angle from fixation. x>0 is temporal for OD / nasal for OS. */
 export interface FieldPoint {
   x: number;
@@ -33,6 +36,7 @@ export interface DriftEvent {
 
 export interface SessionResult {
   eye: EyeSide;
+  pattern: TestPattern;
   startedAt: number;
   finishedAt: number;
   trials: TrialResult[];

@@ -25,7 +25,7 @@ const STIMULUS_DEGREES = 0.43; // Goldmann III equivalent
 
 export default function TestPage() {
   const router = useRouter();
-  const { eye, calibration, saveSession } = useSession();
+  const { eye, pattern, calibration, saveSession } = useSession();
   const {
     inTolerance,
     beginTrial,
@@ -60,7 +60,7 @@ export default function TestPage() {
     reset();
     setTrackingActive(true);
     sessionStartRef.current = Date.now();
-    setEngine(initEngineState(buildTrialList(eye), performance.now()));
+    setEngine(initEngineState(buildTrialList(eye, pattern), performance.now()));
     setStarted(true);
   };
 
@@ -121,6 +121,7 @@ export default function TestPage() {
     if (!started || engine.phase !== "complete") return;
     const session: SessionResult = {
       eye,
+      pattern,
       startedAt: sessionStartRef.current,
       finishedAt: Date.now(),
       trials: engine.results,
@@ -132,7 +133,20 @@ export default function TestPage() {
     saveSession(session);
     setTrackingActive(false);
     router.push("/results");
-  }, [started, engine.phase, engine.results, eye, status, getDriftEvents, getSampleCount, getInToleranceCount, saveSession, setTrackingActive, router]);
+  }, [
+    started,
+    engine.phase,
+    engine.results,
+    eye,
+    pattern,
+    status,
+    getDriftEvents,
+    getSampleCount,
+    getInToleranceCount,
+    saveSession,
+    setTrackingActive,
+    router,
+  ]);
 
   if (!started) {
     return (
@@ -140,6 +154,9 @@ export default function TestPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Ready for the simulated test
         </h1>
+        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-500">
+          Pattern: {pattern} {pattern === "10-2" ? "(central)" : "(full field)"}
+        </p>
         <p className="max-w-md text-zinc-600 dark:text-zinc-400">
           Keep your eyes on the center cross the entire time. Press{" "}
           <kbd className="rounded bg-zinc-200 px-2 py-1 dark:bg-zinc-800">Space</kbd> or click

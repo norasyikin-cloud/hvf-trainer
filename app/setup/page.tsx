@@ -5,21 +5,45 @@ import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/PageShell";
 import { ScreenSizeCalibrator } from "@/components/ScreenSizeCalibrator";
 import { SensitivitySelector } from "@/components/SensitivitySelector";
+import { PatternSelector } from "@/components/PatternSelector";
 import { useSession } from "@/lib/sessionStore";
 import { EyeSide } from "@/lib/types";
 
-type Step = "eye" | "distance" | "sensitivity" | "screen";
+type Step = "pattern" | "eye" | "distance" | "sensitivity" | "screen";
 
 export default function SetupPage() {
   const router = useRouter();
-  const { eye, setEye, calibration, setCalibration, sensitivity, setSensitivity } = useSession();
-  const [step, setStep] = useState<Step>("eye");
+  const { eye, setEye, calibration, setCalibration, sensitivity, setSensitivity, pattern, setPattern } =
+    useSession();
+  const [step, setStep] = useState<Step>("pattern");
   const [distanceCm, setDistanceCm] = useState(calibration.viewingDistanceCm);
 
   const finish = (pxPerCm: number) => {
     setCalibration({ pxPerCm, viewingDistanceCm: distanceCm });
     router.push("/fixation-training");
   };
+
+  if (step === "pattern") {
+    return (
+      <PageShell>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Choose a test pattern
+        </h1>
+        <p className="max-w-md text-zinc-600 dark:text-zinc-400">
+          10-2 tests only the central 10° of vision at finer detail; 24-2
+          covers a wider 24° field. Your eye doctor may recommend a specific
+          one, especially if central vision loss is already suspected.
+        </p>
+        <PatternSelector value={pattern} onChange={setPattern} />
+        <button
+          onClick={() => setStep("eye")}
+          className="rounded-full bg-zinc-900 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        >
+          Continue
+        </button>
+      </PageShell>
+    );
+  }
 
   if (step === "eye") {
     return (

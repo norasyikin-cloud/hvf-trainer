@@ -1,4 +1,4 @@
-import { EyeSide, Trial, TrialResult } from "./types";
+import { EyeSide, TestPattern, Trial, TrialResult } from "./types";
 import { getBlindSpot, getGridPoints } from "./hvf-grid";
 
 export const STIMULUS_DURATION_MS = 200;
@@ -25,9 +25,9 @@ function spreadIndices(count: number, spanLength: number): number[] {
   return Array.from({ length: count }, (_, i) => Math.round(step * (i + 1)));
 }
 
-/** Builds a randomized, catch-trial-interleaved 24-2 trial sequence for one eye. */
-export function buildTrialList(eye: EyeSide): Trial[] {
-  const gridPoints = getGridPoints(eye);
+/** Builds a randomized, catch-trial-interleaved trial sequence for one eye and test pattern. */
+export function buildTrialList(eye: EyeSide, pattern: TestPattern): Trial[] {
+  const gridPoints = getGridPoints(eye, pattern);
   const blindSpot = getBlindSpot(eye);
 
   const stimulusTrials: Trial[] = shuffle(gridPoints).map((point, i) => ({
