@@ -41,6 +41,12 @@ function loadFaceMeshScript(): Promise<void> {
  */
 export function useWebGazer(onSample: (sample: GazeSample) => void) {
   const [status, setStatus] = useState<GazeStatus>("idle");
+  // Tracks whether WebGazer has ever produced a real (non-null) prediction. `wg.begin()` can
+  // resolve successfully (camera stream started) even when the underlying face-mesh detector
+  // never actually detects a face -- e.g. a CDN asset for the MediaPipe model failed to load,
+  // or the eye is occluded. Without this, that failure is silent: `status` still says "camera"
+  // but no samples ever arrive, and the whole app just looks frozen with no explanation.
+  const [hasReceivedCameraSample, setHasReceivedCameraSample] = useState(false);
   const webgazerRef = useRef<WebGazerInstance | null>(null);
   const onSampleRef = useRef(onSample);
   useEffect(() => {
@@ -49,6 +55,7 @@ export function useWebGazer(onSample: (sample: GazeSample) => void) {
 
   const startCamera = useCallback(async () => {
     setStatus("loading");
+    setHasReceivedCameraSample(false);
     try {
       await loadFaceMeshScript();
       const mod = await import("webgazer");
@@ -63,6 +70,7 @@ export function useWebGazer(onSample: (sample: GazeSample) => void) {
         .showPredictionPoints(false)
         .setGazeListener((data) => {
           if (data) {
+            setHasReceivedCameraSample(true);
             onSampleRef.current({ x: data.x, y: data.y, source: "camera", atMs: performance.now() });
           }
         });
@@ -97,5 +105,5 @@ export function useWebGazer(onSample: (sample: GazeSample) => void) {
     webgazerRef.current?.recordScreenPosition(x, y, "click");
   }, []);
 
-  return { status, startCamera, enableMouseFallback, recordCalibrationClick };
+  return { status, startCamera, enableMouseFallback, recordCalibrationClick, hasReceivedCameraSample };
 }

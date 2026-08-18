@@ -27,8 +27,11 @@ export default function SetupPage() {
           Which eye are you testing?
         </h1>
         <p className="max-w-md text-zinc-600 dark:text-zinc-400">
-          Patch or close the other eye during the session, just like a real
-          Humphrey exam tests one eye at a time.
+          A real Humphrey exam patches the other eye completely, since each
+          eye is tested on its own. Keep both eyes open here instead — the
+          webcam tracker needs to see both to follow your gaze, so this
+          selection just picks which eye&apos;s blind-spot location and field
+          pattern to simulate for practice.
         </p>
         <div className="flex gap-4">
           {(["OD", "OS"] as EyeSide[]).map((side) => (

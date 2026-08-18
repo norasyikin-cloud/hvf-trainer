@@ -98,7 +98,8 @@ export function useGazeFixation({ toleranceDeg = 4, calibration, active }: Optio
     [active],
   );
 
-  const { status, startCamera, enableMouseFallback, recordCalibrationClick } = useWebGazer(handleSample);
+  const { status, startCamera, enableMouseFallback, recordCalibrationClick, hasReceivedCameraSample } =
+    useWebGazer(handleSample);
 
   const beginTrial = useCallback(() => {
     heldSinceMarkRef.current = !isDriftingRef.current;
@@ -121,6 +122,7 @@ export function useGazeFixation({ toleranceDeg = 4, calibration, active }: Optio
     startCamera,
     enableMouseFallback,
     recordCalibrationClick,
+    hasReceivedCameraSample,
     gaze: displayGaze,
     inTolerance,
     driftEventCount,
