@@ -49,7 +49,7 @@ also picked up directly by Zenodo when this repository is archived there.
   author  = {Mustafa, Norasyikin},
   title   = {{HVF-Trainer: Web-Based Real-Time Visual Field Fixation Simulator}},
   year    = {2026},
-  version = {1.0.0},
+  version = {1.0.1},
   url     = {https://github.com/norasyikin-cloud/hvf-trainer},
   doi     = {10.5281/zenodo.XXXXX}
 }
