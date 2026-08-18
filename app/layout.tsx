@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "@/lib/sessionStore";
 import { GazeProvider } from "@/lib/gazeStore";
+import { NavOverrideProvider } from "@/lib/navOverride";
+import { NavControls } from "@/components/NavControls";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,7 +30,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <SessionProvider>
-          <GazeProvider>{children}</GazeProvider>
+          <GazeProvider>
+            <NavOverrideProvider>
+              <NavControls />
+              {children}
+            </NavOverrideProvider>
+          </GazeProvider>
         </SessionProvider>
       </body>
     </html>

@@ -5,14 +5,28 @@ import Link from "next/link";
 import { PageShell } from "@/components/PageShell";
 import { FixationTarget } from "@/components/FixationTarget";
 import { useGaze } from "@/lib/gazeStore";
+import { usePageNavOverride } from "@/lib/navOverride";
 
 const PRACTICE_SECONDS = 30;
 
 type Phase = "idle" | "running" | "done";
 
 export default function FixationTrainingPage() {
-  const { inTolerance, getSampleCount, getInToleranceCount, getDriftEvents, reset, setTrackingActive, status } =
-    useGaze();
+  const {
+    inTolerance,
+    getSampleCount,
+    getInToleranceCount,
+    getDriftEvents,
+    reset,
+    setTrackingActive,
+    status,
+    endCamera,
+  } = useGaze();
+
+  // Back/Home always exit straight to /setup from here, releasing the camera first -- lets a
+  // patient who realizes they picked the wrong pattern/sensitivity immediately fix it.
+  usePageNavOverride({ exitTo: "/setup", onBeforeExit: endCamera });
+
   const [phase, setPhase] = useState<Phase>("idle");
   const [secondsLeft, setSecondsLeft] = useState(PRACTICE_SECONDS);
   const [summary, setSummary] = useState<{ pct: number; drifts: number } | null>(null);

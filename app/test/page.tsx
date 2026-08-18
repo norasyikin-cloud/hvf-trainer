@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { FixationTarget } from "@/components/FixationTarget";
 import { StimulusCanvas, ScreenStimulus } from "@/components/StimulusCanvas";
 import { ProgressHUD } from "@/components/ProgressHUD";
-import { NavControls } from "@/components/NavControls";
 import { PauseOverlay } from "@/components/PauseOverlay";
 import { useGaze } from "@/lib/gazeStore";
 import { useSession } from "@/lib/sessionStore";
+import { usePageNavOverride } from "@/lib/navOverride";
 import { degToPx, fieldPointToScreen } from "@/lib/gaze-utils";
 import { playPresentationTone } from "@/lib/audio";
 import {
@@ -38,7 +38,13 @@ export default function TestPage() {
     getSampleCount,
     getInToleranceCount,
     setTrackingActive,
+    endCamera,
   } = useGaze();
+
+  // Back/Home always exit straight to /setup from here, releasing the camera first -- lets a
+  // patient who realizes they picked the wrong pattern/sensitivity immediately fix it, without
+  // hunting for how to escape an active test.
+  usePageNavOverride({ exitTo: "/setup", onBeforeExit: endCamera });
 
   const [started, setStarted] = useState(false);
   const [engine, setEngine] = useState<EngineState>(() => initEngineState([], 0));
@@ -174,7 +180,6 @@ export default function TestPage() {
   if (!started) {
     return (
       <div className="flex min-h-screen flex-1 flex-col items-center justify-center gap-8 bg-zinc-50 px-6 text-center dark:bg-zinc-950">
-        <NavControls />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Ready for the simulated test
         </h1>
@@ -200,7 +205,6 @@ export default function TestPage() {
   if (engine.phase === "complete") {
     return (
       <div className="flex min-h-screen flex-1 items-center justify-center bg-zinc-950 text-zinc-300">
-        <NavControls />
         Finishing up…
       </div>
     );
@@ -220,7 +224,6 @@ export default function TestPage() {
       <StimulusCanvas stimulus={stimulus} />
       <FixationTarget inTolerance={inTolerance} />
       <ProgressHUD current={engine.index} total={engine.trials.length} />
-      <NavControls confirmMessage="Leaving now will end this test and your progress won't be saved. Continue?" />
       <button
         onClick={pauseTest}
         className="fixed top-4 right-4 z-[70] rounded-full bg-black/60 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/80"

@@ -126,7 +126,7 @@ export function useGazeFixation({ toleranceDeg = 4, graceMs = DEFAULT_GRACE_MS, 
     [active],
   );
 
-  const { status, startCamera, enableMouseFallback, recordCalibrationClick, hasReceivedCameraSample } =
+  const { status, startCamera, enableMouseFallback, recordCalibrationClick, hasReceivedCameraSample, endCamera } =
     useWebGazer(handleSample);
 
   const beginTrial = useCallback(() => {
@@ -152,6 +152,7 @@ export function useGazeFixation({ toleranceDeg = 4, graceMs = DEFAULT_GRACE_MS, 
     enableMouseFallback,
     recordCalibrationClick,
     hasReceivedCameraSample,
+    endCamera,
     gaze: displayGaze,
     inTolerance,
     driftEventCount,

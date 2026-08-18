@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 
+// Top row sits lower than a symmetric 6% would put it (94% would suggest), to stay clear of the
+// globally-rendered NavControls pill in the top-left corner -- otherwise that point would be
+// unclickable on small/mobile viewports, which 10-2 mode specifically targets.
 const POINTS: [number, number][] = [
-  [0.05, 0.06], [0.5, 0.06], [0.95, 0.06],
+  [0.05, 0.14], [0.5, 0.14], [0.95, 0.14],
   [0.05, 0.5], [0.5, 0.5], [0.95, 0.5],
   [0.05, 0.94], [0.5, 0.94], [0.95, 0.94],
 ];

@@ -105,5 +105,34 @@ export function useWebGazer(onSample: (sample: GazeSample) => void) {
     webgazerRef.current?.recordScreenPosition(x, y, "click");
   }, []);
 
-  return { status, startCamera, enableMouseFallback, recordCalibrationClick, hasReceivedCameraSample };
+  // wg.end() alone doesn't stop the camera hardware (WebGazer leaves that to stopVideo(), which
+  // it doesn't call itself) -- so the camera indicator light stays on unless both are called.
+  // Resets status back to "idle" so a later startCamera() re-acquires a fresh stream cleanly.
+  // No-op if there's no camera session to release (e.g. mouse fallback) -- must not disturb that.
+  const endCamera = useCallback(() => {
+    const wg = webgazerRef.current;
+    if (!wg) return;
+    try {
+      wg.stopVideo();
+    } catch {
+      // no active stream to stop
+    }
+    try {
+      wg.end();
+    } catch {
+      // already ended
+    }
+    webgazerRef.current = null;
+    setStatus("idle");
+    setHasReceivedCameraSample(false);
+  }, []);
+
+  return {
+    status,
+    startCamera,
+    enableMouseFallback,
+    recordCalibrationClick,
+    hasReceivedCameraSample,
+    endCamera,
+  };
 }

@@ -17,6 +17,7 @@ declare module "webgazer" {
     applyKalmanFilter(apply: boolean): WebGazerInstance;
     begin(): Promise<WebGazerInstance>;
     end(): void;
+    stopVideo(): WebGazerInstance;
     pause(): WebGazerInstance;
     resume(): WebGazerInstance;
     clearData(): void;
